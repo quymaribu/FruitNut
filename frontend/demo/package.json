@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "vite",
+    "start": "concurrently \"npm run start-frontend\" \"npm run start-api\"",
+    "start-frontend": "vite",
+    "start-api": "cd ../services/dotnet-orders && dotnet run",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
