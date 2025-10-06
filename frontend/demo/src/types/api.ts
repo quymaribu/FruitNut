@@ -5,6 +5,7 @@ export interface Product {
   stock: number;
   isActive: boolean;
   category: string | null;
+  
 }
 
 export interface User {

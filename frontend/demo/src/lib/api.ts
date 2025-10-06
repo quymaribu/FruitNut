@@ -1,50 +1,37 @@
-import { API_CONFIG } from "@/config/api.config";
+import axios, { AxiosInstance } from "axios";
+// import { API_CONFIG } from "@/config/api.config";
 
-const API_BASE_URL = API_CONFIG.BASE_URL;
 
+
+// const API_BASE_URL = API_CONFIG.BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL; 
+// Khởi tạo instance axios
+const instance: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Wrapper API
 export const api = {
   async get<TResponse>(endpoint: string): Promise<TResponse> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-    return response.json();
+    const response = await instance.get<TResponse>(endpoint);
+    return response.data;
   },
 
   async post<TResponse, TRequest>(endpoint: string, data: TRequest): Promise<TResponse> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-    return response.json();
+    const response = await instance.post<TResponse>(endpoint, data);
+    return response.data;
   },
 
   async put<TResponse, TRequest>(endpoint: string, data: TRequest): Promise<TResponse> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-    return response.json();
+    const response = await instance.put<TResponse>(endpoint, data);
+    return response.data;
   },
 
-  async delete(endpoint: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+  async delete<TResponse = void>(endpoint: string): Promise<TResponse> {
+    const response = await instance.delete<TResponse>(endpoint);
+    return response.data;
   },
 };

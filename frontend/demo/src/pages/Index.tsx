@@ -11,25 +11,27 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import greenSmoothie from "@/assets/green-smoothie.jpg";
 import orangeSmoothie from "@/assets/orange-smoothie.jpg";
 import berrySmoothie from "@/assets/berry-smoothie.jpg";
+import { Product } from "@/types/api";
 
 const Index = () => {
-  // Fetch products from API
-  const { data: products, isLoading, error } = useQuery({
-    queryKey: ['products'],
+  // ✅ Sử dụng React Query để gọi API products
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
     queryFn: productsService.getAll,
   });
 
-  // Fallback images for products
   const productImages = [greenSmoothie, orangeSmoothie, berrySmoothie];
-  
-  // Get featured products (first 3 active products)
-  const featuredProducts = products?.filter(p => p.isActive).slice(0, 3) || [];
+  const featuredProducts = products.filter((p) => p.isActive).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
-      
+
       {/* Featured Drinks Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
@@ -42,7 +44,7 @@ const Index = () => {
             </p>
           </div>
 
-          {error && (
+          {isError && (
             <Alert variant="destructive" className="mb-8">
               <AlertDescription>
                 Không thể tải sản phẩm. Vui lòng kiểm tra kết nối API.
@@ -66,7 +68,9 @@ const Index = () => {
                 <DrinkCard
                   key={product.productId}
                   title={product.name}
-                  description={`Giá: ${product.price.toLocaleString('vi-VN')}đ | Còn ${product.stock} sản phẩm`}
+                  description={`Giá: ${product.price.toLocaleString(
+                    "vi-VN"
+                  )}đ | Còn ${product.stock} sản phẩm`}
                   image={productImages[index % productImages.length]}
                   ingredients={[`Mã: ${product.productId}`]}
                   category={product.category || "Sản phẩm"}
@@ -77,7 +81,10 @@ const Index = () => {
 
           <div className="text-center">
             <Link to="/recipes">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 group">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 group"
+              >
                 Xem tất cả công thức
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -94,7 +101,8 @@ const Index = () => {
               Tại Sao Chọn FruitNut?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Chúng tôi mang đến giải pháp dinh dưỡng hoàn hảo cho lối sống healthy
+              Chúng tôi mang đến giải pháp dinh dưỡng hoàn hảo cho lối sống
+              healthy
             </p>
           </div>
 
@@ -103,27 +111,39 @@ const Index = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-3xl">
                 🥑
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">100% Tự Nhiên</h3>
+              <h3 className="text-xl font-bold mb-2 text-foreground">
+                100% Tự Nhiên
+              </h3>
               <p className="text-muted-foreground">
                 Chỉ sử dụng nguyên liệu tươi ngon, không chất bảo quản
               </p>
             </div>
 
-            <div className="text-center p-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <div
+              className="text-center p-6 animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-secondary to-secondary-glow rounded-full flex items-center justify-center text-3xl">
                 💪
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">Dinh Dưỡng Cân Bằng</h3>
+              <h3 className="text-xl font-bold mb-2 text-foreground">
+                Dinh Dưỡng Cân Bằng
+              </h3>
               <p className="text-muted-foreground">
                 Kết hợp hoàn hảo giữa vitamin và protein từ hạt
               </p>
             </div>
 
-            <div className="text-center p-6 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <div
+              className="text-center p-6 animate-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-accent to-secondary rounded-full flex items-center justify-center text-3xl">
                 ⭐
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">Dễ Thực Hiện</h3>
+              <h3 className="text-xl font-bold mb-2 text-foreground">
+                Dễ Thực Hiện
+              </h3>
               <p className="text-muted-foreground">
                 Hướng dẫn chi tiết, dễ làm theo ngay tại nhà
               </p>

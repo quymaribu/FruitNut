@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Learn\\FruitNut\\services\\dotnet-orders\\dotnet-orders.csproj": {}
+    "D:\\Learn\\FruitNut\\serverAPI\\dotnet-orders\\dotnet-orders.csproj": {}
   },
   "projects": {
-    "D:\\Learn\\FruitNut\\services\\dotnet-orders\\dotnet-orders.csproj": {
+    "D:\\Learn\\FruitNut\\serverAPI\\dotnet-orders\\dotnet-orders.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Learn\\FruitNut\\services\\dotnet-orders\\dotnet-orders.csproj",
+        "projectUniqueName": "D:\\Learn\\FruitNut\\serverAPI\\dotnet-orders\\dotnet-orders.csproj",
         "projectName": "dotnet-orders",
-        "projectPath": "D:\\Learn\\FruitNut\\services\\dotnet-orders\\dotnet-orders.csproj",
+        "projectPath": "D:\\Learn\\FruitNut\\serverAPI\\dotnet-orders\\dotnet-orders.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "D:\\Learn\\FruitNut\\services\\dotnet-orders\\obj\\",
+        "outputPath": "D:\\Learn\\FruitNut\\serverAPI\\dotnet-orders\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
