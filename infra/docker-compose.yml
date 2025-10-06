@@ -1,0 +1,51 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "123456"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlvolume:/var/opt/mssql
+      - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  dotnet-orders:
+    build:
+      context: ../services/dotnet-orders
+      dockerfile: Dockerfile
+    environment:
+      - ConnectionStrings__Default=Server=sqlserver,1433;Database=EcomDb;User Id=sa;Password=123456;
+    depends_on:
+      - sqlserver
+
+  python-reco:
+    build:
+      context: ../services/python-reco
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - sqlserver
+
+  node-gateway:
+    build:
+      context: ../services/node-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - dotnet-orders
+      - python-reco
+
+  laravel-front-end:
+    build:
+      context: ../frontend/laravel-front-end
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - node-gateway
+
+volumes:
+  sqlvolume:
