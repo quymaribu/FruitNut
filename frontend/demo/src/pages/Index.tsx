@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import DrinkCard from "@/components/DrinkCard";
@@ -12,17 +14,45 @@ import greenSmoothie from "@/assets/green-smoothie.jpg";
 import orangeSmoothie from "@/assets/orange-smoothie.jpg";
 import berrySmoothie from "@/assets/berry-smoothie.jpg";
 import { Product } from "@/types/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
-  // ✅ Sử dụng React Query để gọi API products
+  const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
+
+  // 🚫 Không render nếu chưa biết user (đang loading)
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, user, navigate]);
+
+  // 🧠 useQuery vẫn được gọi unconditionally
   const {
     data: products = [],
-    isLoading,
+    isLoading: productsLoading,
     isError,
   } = useQuery({
     queryKey: ["products"],
     queryFn: productsService.getAll,
+    enabled: !!user && !authLoading, // ✅ Chỉ gọi nếu đã login và đã xong auth loading
   });
+
+  // 👀 Hiển thị màn hình loading trong khi kiểm tra đăng nhập
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Đang kiểm tra đăng nhập...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+
 
   const productImages = [greenSmoothie, orangeSmoothie, berrySmoothie];
   const featuredProducts = products.filter((p) => p.isActive).slice(0, 3);
@@ -53,7 +83,7 @@ const Index = () => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-            {isLoading ? (
+            {productsLoading ? (
               <>
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="space-y-4">
@@ -68,9 +98,7 @@ const Index = () => {
                 <DrinkCard
                   key={product.productId}
                   title={product.name}
-                  description={`Giá: ${product.price.toLocaleString(
-                    "vi-VN"
-                  )}đ | Còn ${product.stock} sản phẩm`}
+                  description={`Giá: ${product.price.toLocaleString("vi-VN")}đ | Còn ${product.stock} sản phẩm`}
                   image={productImages[index % productImages.length]}
                   ingredients={[`Mã: ${product.productId}`]}
                   category={product.category || "Sản phẩm"}

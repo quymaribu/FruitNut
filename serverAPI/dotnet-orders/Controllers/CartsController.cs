@@ -29,6 +29,26 @@ namespace dotnet_orders.Controllers
             return CreatedAtAction(nameof(GetById), new { id = c.CartId }, c);
         }
 
+        [HttpPost("add")]
+        public IActionResult AddItem([FromBody] CartItemDto item)
+        {
+            if (item == null)
+                return BadRequest("Invalid item data");
+
+            var cartItem = new CartItem
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                UnitPrice = item.UnitPrice,
+                // CartId có thể sinh tự động (VD: gán Session hay tạo GUID backend)
+            };
+
+            _context.CartItems.Add(cartItem);
+            _context.SaveChanges();
+
+            return Ok(cartItem);
+        }
+
         [HttpPut("{id:int}")]
         public IActionResult Update(int id, [FromBody] Cart updated)
         {

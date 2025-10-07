@@ -26,7 +26,7 @@ public partial class Product
     public int? CategoryId { get; set; }
 
     public DateTime CreatedAt { get; set; }
-
+    public string ImageUrl { get; set; } = string.Empty;
     public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
     public virtual Category? Category { get; set; }

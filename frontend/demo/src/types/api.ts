@@ -5,7 +5,7 @@ export interface Product {
   stock: number;
   isActive: boolean;
   category: string | null;
-  
+  imageUrl: string;
 }
 
 export interface User {
@@ -42,15 +42,21 @@ export interface OrderItem {
 }
 
 export interface Cart {
-  cartId: number;
+  cartId: string;
   userId: number;
 }
-
-export interface CartItem {
-  cartItemId: number;
-  cartId: number;
+export interface CartItemCreate {
   productId: number;
   quantity: number;
+  unitPrice: number;
+}
+
+
+export interface CartItem {
+  productId: number;
+  unitPrice: number;
+  quantity: number;
+  product?: Product;
 }
 
 export interface Address {

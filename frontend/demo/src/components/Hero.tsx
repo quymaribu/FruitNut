@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-drinks.jpg";
 
 const Hero = () => {
@@ -22,7 +23,7 @@ const Hero = () => {
             <Sparkles className="w-4 h-4" />
             <span className="text-sm font-medium">100% Tự nhiên & Dinh dưỡng</span>
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             Đồ Uống Healthy
             <br />
@@ -30,26 +31,30 @@ const Hero = () => {
               Từ Trái Cây & Hạt
             </span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-white/90">
             Khám phá hàng trăm công thức đồ uống bổ dưỡng, kết hợp hoàn hảo giữa trái cây tươi và hạt dinh dưỡng
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 font-semibold group"
-            >
-              Khám phá ngay
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="bg-transparent border-2 border-white text-white hover:bg-white/10"
-            >
-              Xem công thức
-            </Button>
+            <Link to="/products">
+              <Button
+                size="lg"
+                className="bg-white text-primary hover:bg-white/90 font-semibold group"
+              >
+                Bắt đầu ngay
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Link to="/recipes">
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-transparent border-2 border-white text-white hover:bg-white/10"
+              >
+                Xem công thức
+              </Button>
+            </Link>
           </div>
         </div>
 

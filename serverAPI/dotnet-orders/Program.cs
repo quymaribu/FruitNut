@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using dotnet_orders.Services;
 using dotnet_orders.Helpers;
+using dotnet_orders.Mapping;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// JWT config
+#region Jwt
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"];
 builder.Services.Configure<JwtSettings>(jwtSettings);
@@ -27,16 +29,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = jwtSettings["Issuer"],   // Issuer hợp lệ (lấy từ appsettings.json)
-            ValidAudience = jwtSettings["Audience"], // Audience hợp lệ
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(secretKey)  // Khóa bí mật để ký token
+        Encoding.UTF8.GetBytes(secretKey)
     ),
-
-            ClockSkew = TimeSpan.Zero              // Bỏ khoảng lệch mặc định 5 phút
+            ClockSkew = TimeSpan.Zero
         };
 
     });
+#endregion Jwt
 
 builder.Services.AddAuthorization();
 
@@ -45,26 +47,46 @@ builder.Services.AddDbContext<EcomDbContext>(options =>
 
 builder.Services.AddControllers();
 
+// Session
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromDays(1);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Cors
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLovable", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:8080", "https://*.lovable.app")
+        policy.WithOrigins("http://localhost:8080", "http://192.168.0.2:8080")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
+#region Scoped
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<JwtTokenService>();
+#endregion Scoped
 
+#region Mapper
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
+
+#endregion Mapper
 
 var app = builder.Build();
 
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
     var swagger = "http://localhost:5213/swagger/index.html";
@@ -82,11 +104,13 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-app.UseCors("AllowLovable");
+app.UseCors("AllowFrontend");
+app.UseSession();
+
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // phải đặt trước UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

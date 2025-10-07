@@ -1,11 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
-
+import { useAuth } from "@/contexts/AuthContext";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
+  };
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4">
@@ -37,12 +43,27 @@ const Navbar = () => {
             >
               Lợi ích
             </Link>
-            <Link
-              to="/login"
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Đăng nhập
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-4 h-4" />
+                  <span className="font-medium">{user.fullName}</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Đăng xuất
+                </Button>
+              </div>
+            ) : (
+              <Link to="/auth">
+                <Button
+                  variant="default"
+                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                >
+                  Đăng Nhập
+                </Button>
+              </Link>
+            )}
             <Button
               variant="default"
               className="bg-gradient-to-r from-primary to-secondary hover:opacity-90"

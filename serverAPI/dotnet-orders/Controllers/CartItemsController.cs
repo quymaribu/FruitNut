@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using dotnet_orders.DTOs;
+using System.Text.Json;
 using dotnet_orders.Models;
 
 namespace dotnet_orders.Controllers
@@ -7,49 +9,133 @@ namespace dotnet_orders.Controllers
     [ApiController]
     public class CartItemsController : ControllerBase
     {
+        private const string SessionCartKey = "CartItems";
+
         private readonly EcomDbContext _context;
 
-        public CartItemsController(EcomDbContext context) => _context = context;
+        public CartItemsController(EcomDbContext context)
+        {
+            _context = context;
+        }
 
         [HttpGet]
-        public IActionResult GetAll() => Ok(_context.CartItems.ToList());
-
-        [HttpGet("{id:int}")]
-        public IActionResult GetById(int id)
+        public IActionResult GetAll()
         {
-            var ci = _context.CartItems.Find(id);
-            return ci == null ? NotFound() : Ok(ci);
+            var cart = GetCartFromSession();
+
+            var cartWithProducts = cart.Select(item =>
+            {
+                var product = _context.Products
+                    .Where(p => p.ProductId == item.ProductId)
+                    .Select(p => new ProductDto
+                    {
+                        ProductId = p.ProductId,
+                        Name = p.Name,
+                        Price = p.Price,
+                        Stock = p.Stock,
+                        IsActive = p.IsActive,
+                        Category = p.Category != null ? p.Category.Name : null,
+                        ImageUrl = p.ImageUrl ?? ""
+                    })
+                    .FirstOrDefault();
+
+                return new CartItemDto
+                {
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    Product = product
+                };
+            }).ToList();
+
+            return Ok(cartWithProducts);
         }
 
+
+
+
+        // ✅ Thêm sản phẩm vào giỏ
         [HttpPost]
-        public IActionResult Create([FromBody] CartItem ci)
+        public IActionResult AddItem([FromBody] CartItemCreateDto newItem)
         {
-            _context.CartItems.Add(ci);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = ci.CartItemId }, ci);
+            if (newItem == null)
+                return BadRequest("Invalid item data");
+
+            var cart = GetCartFromSession();
+
+            var existingItem = cart.FirstOrDefault(x => x.ProductId == newItem.ProductId);
+            if (existingItem != null)
+            {
+                existingItem.Quantity += newItem.Quantity;
+            }
+            else
+            {
+                cart.Add(new CartItemCreateDto
+                {
+                    ProductId = newItem.ProductId,
+                    Quantity = newItem.Quantity,
+                    UnitPrice = newItem.UnitPrice
+                });
+            }
+
+            SaveCartToSession(cart);
+            return Ok(cart);
         }
 
-        [HttpPut("{id:int}")]
-        public IActionResult Update(int id, [FromBody] CartItem updated)
+        // ✅ Cập nhật sản phẩm trong giỏ
+        [HttpPut("{productId:int}")]
+        public IActionResult Update(int productId, [FromBody] CartItemCreateDto updateDto)
         {
-            var ci = _context.CartItems.Find(id);
-            if (ci == null) return NotFound();
+            var cart = GetCartFromSession();
 
-            ci.ProductId = updated.ProductId;
-            ci.Quantity = updated.Quantity;
-            _context.SaveChanges();
-            return NoContent();
+            var item = cart.FirstOrDefault(x => x.ProductId == productId);
+            if (item == null)
+                return NotFound();
+
+            item.Quantity = updateDto.Quantity;
+            item.UnitPrice = updateDto.UnitPrice;
+
+            SaveCartToSession(cart);
+            return Ok(cart);
         }
 
-        [HttpDelete("{id:int}")]
-        public IActionResult Delete(int id)
+        // ✅ Xóa sản phẩm cụ thể
+        [HttpDelete("{productId:int}")]
+        public IActionResult Delete(int productId)
         {
-            var ci = _context.CartItems.Find(id);
-            if (ci == null) return NotFound();
+            var cart = GetCartFromSession();
+            var item = cart.FirstOrDefault(x => x.ProductId == productId);
+            if (item == null)
+                return NotFound();
 
-            _context.CartItems.Remove(ci);
-            _context.SaveChanges();
-            return NoContent();
+            cart.Remove(item);
+            SaveCartToSession(cart);
+
+            return Ok(cart);
+        }
+
+        // ✅ Xóa toàn bộ giỏ hàng
+        [HttpDelete("clear")]
+        public IActionResult ClearCart()
+        {
+            SaveCartToSession(new List<CartItemCreateDto>());
+            return Ok(new List<CartItemCreateDto>());
+        }
+
+        // 🔧 Lấy giỏ hàng từ session
+        private List<CartItemCreateDto> GetCartFromSession()
+        {
+            var cartJson = HttpContext.Session.GetString(SessionCartKey);
+            return string.IsNullOrEmpty(cartJson)
+                ? new List<CartItemCreateDto>()
+                : JsonSerializer.Deserialize<List<CartItemCreateDto>>(cartJson) ?? new List<CartItemCreateDto>();
+        }
+
+        // 🔧 Lưu giỏ hàng vào session
+        private void SaveCartToSession(List<CartItemCreateDto> cart)
+        {
+            var cartJson = JsonSerializer.Serialize(cart);
+            HttpContext.Session.SetString(SessionCartKey, cartJson);
         }
     }
 }
